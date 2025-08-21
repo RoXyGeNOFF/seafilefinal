@@ -7,6 +7,11 @@
 - `lan-http/` — локальная сеть **HTTP Only**
 
 ## Быстрый старт
+```bash
+git clone https://github.com/RoXyGeNOFF/seafilefinal.git
+cd seafilefinal
+```
+
 Перейдите в нужную папку и выполните:
 ```bash
 chmod +x install.sh
