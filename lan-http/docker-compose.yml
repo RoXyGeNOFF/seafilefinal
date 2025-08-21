@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 
   seafile:
-    image: docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
+    image: https://hub.docker.com/r/foxel/seafile # docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
     container_name: seafile
     depends_on: [ db, redis, elasticsearch ]
     environment:
