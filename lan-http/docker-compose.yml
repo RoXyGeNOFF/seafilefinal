@@ -35,7 +35,7 @@ services:
   seafile:
     image: seafileltd/seafile-mc:latest # docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
     container_name: seafile
-    depends_on: [ db, redis, elasticsearch ]
+    depends_on: [ db, redis,] #elasticsearch ]
     environment:
       - SEAFILE_MYSQL_DB_HOST=db
       - SEAFILE_MYSQL_DB_PORT=3306
@@ -48,7 +48,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - SEARCH_SERVERS=elasticsearch:9200
+     # - SEARCH_SERVERS=elasticsearch:9200
       - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
       - SEAFILE_SERVER_HOSTNAME=${LOCAL_IP}
       - SEAFILE_SERVER_PROTOCOL=http
