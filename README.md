@@ -7,14 +7,14 @@
 - `lan-http/` — локальная сеть **HTTP Only**
 
 ## Быстрый старт
-
-```bash
-git clone https://github.com/RoXyGeNOFF/seafilefinal.git
-cd seafilefinal
-```
 Перейдите в нужную папку и выполните:
-
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
+После успешной установки скрипт покажет QR‑код (USDT TRC20) **картинкой** прямо в терминале (если терминал поддерживает графику). В противном случае — выведет путь к файлу `assets/donate_qr.png`.
+
+## Требования
+- Docker Engine + Docker Compose plugin
+- OpenSSL (для генерации ключей/сертификатов в LAN SSL)
+- Для отрисовки QR‑кода картинкой терминал должен поддерживать Kitty/iterm2/chafa/viu (необязательно).
