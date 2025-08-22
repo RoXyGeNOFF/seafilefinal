@@ -6,8 +6,9 @@
 ## 🚀 Быстрый старт
 
 ```bash
-git clone https://github.com/yourname/seafile-local.git
-cd seafile-local
+git clone https://github.com/RoXyGeNOFF/seafilefinal.git
+cd seafilefinal
+cd lan-http
 cp .env.example .env
 nano .env   # впишите свои значения (IP, Email, пароли)
 chmod +x install.sh
@@ -21,7 +22,3 @@ chmod +x install.sh
 - Seafile CE (latest)
 - MariaDB
 - Memcached
-
-## 📌 Автор
-
-Собрано автоматически с ❤️  
