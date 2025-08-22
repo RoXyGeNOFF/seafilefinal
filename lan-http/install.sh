@@ -42,7 +42,7 @@ services:
     restart: always
 
   seafile:
-    image: docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
+    image: seafileltd/seafile-mc:latest # docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
     container_name: seafile
     ports:
       - "80:80"
