@@ -1,46 +1,72 @@
-#!/usr/bin/env bash
-set -euo pipefail
 
-BOLD=$(tput bold || true); GREEN=$(tput setaf 2 || true); RESET=$(tput sgr0 || true)
+#!/bin/bash
+set -e
 
-require() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Требуется $1"; exit 1; }; }
-require docker
-require openssl
+echo "=== Seafile локальная установка ==="
 
-read -rp "IP сервера в LAN: " LOCAL_IP
-read -rp "Admin email [admin@${LOCAL_IP}]: " ADMIN_EMAIL; ADMIN_EMAIL=${ADMIN_EMAIL:-admin@${LOCAL_IP}}
-read -rp "Admin пароль (пусто = автоген): " ADMIN_PASS; [ -z "$ADMIN_PASS" ] && ADMIN_PASS=$(openssl rand -base64 12) && echo "Сгенерирован пароль: ${ADMIN_PASS}"
-read -rp "Каталог данных [/opt/seafile-data]: " DATA_DIR; DATA_DIR=${DATA_DIR:-/opt/seafile-data}
+# Проверка Docker
+if ! command -v docker &> /dev/null; then
+    echo "Устанавливаю Docker..."
+    apt-get update && apt-get install -y docker.io
+fi
 
-MYSQL_ROOT_PASSWORD=$(openssl rand -base64 18)
-SEAFILE_DB_PASSWORD=$(openssl rand -base64 18)
-REDIS_PASSWORD=$(openssl rand -base64 18)
-JWT_KEY=$(openssl rand -hex 40)
+# Проверка Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    echo "Устанавливаю Docker Compose..."
+    apt-get install -y docker-compose
+fi
 
-mkdir -p "${DATA_DIR}/seafile" "${DATA_DIR}/mysql"
+# Если нет .env, создаём из примера
+if [ ! -f .env ]; then
+    echo "Файл .env не найден, создаём из .env.example"
+    cp .env.example .env
+fi
 
-cat > .env <<EOF
-SEAFILE_VOLUME=${DATA_DIR}/seafile
-SEAFILE_MYSQL_VOLUME=${DATA_DIR}/mysql
+# Загружаем переменные
+source .env
 
-MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-SEAFILE_DB_PASSWORD=${SEAFILE_DB_PASSWORD}
-REDIS_PASSWORD=${REDIS_PASSWORD}
-JWT_PRIVATE_KEY=${JWT_KEY}
+# Создание docker-compose.yml
+cat > docker-compose.yml <<EOF
+version: '3.8'
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      - MYSQL_ROOT_PASSWORD=\${DB_ROOT_PASSWD}
+    volumes:
+      - ./seafile-mysql:/var/lib/mysql
+    restart: always
 
-LOCAL_IP=${LOCAL_IP}
-SEAFILE_SERVER_PROTOCOL=http
-TIME_ZONE=UTC
-INIT_SEAFILE_ADMIN_EMAIL=${ADMIN_EMAIL}
-INIT_SEAFILE_ADMIN_PASSWORD=${ADMIN_PASS}
+  memcached:
+    image: memcached:alpine
+    restart: always
+
+  seafile:
+    image: docker.io/seafileltd/seafile:latest  # https://hub.docker.com/r/seafileltd/seafile
+    container_name: seafile
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DB_HOST=db
+      - DB_ROOT_PASSWD=\${DB_ROOT_PASSWD}
+      - SEAFILE_ADMIN_EMAIL=\${SEAFILE_ADMIN_EMAIL}
+      - SEAFILE_ADMIN_PASSWORD=\${SEAFILE_ADMIN_PASSWORD}
+      - SEAFILE_SERVER_HOSTNAME=\${LOCAL_IP}
+    volumes:
+      - ./seafile-data:/shared
+    depends_on:
+      - db
+      - memcached
+    restart: always
 EOF
 
-docker compose pull
-docker compose up -d
+# Запуск
+docker-compose up -d
 
-echo -e "\n${GREEN}${BOLD}Seafile (LAN HTTP) поднят.${RESET} Откройте: http://${LOCAL_IP}/"
-echo "Admin: ${ADMIN_EMAIL}"
-echo "Pass:  ${ADMIN_PASS}"
-
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-"${ROOT_DIR}/scripts/show_image.sh" "${ROOT_DIR}/assets/donate_qr.png" "USDT (TRC20): TDb2rmYkYGoX2o322JmPR12oAUJbkgtaWg"
+echo "======================================"
+echo "✅ Seafile установлен"
+echo "Откройте в браузере: http://$LOCAL_IP"
+echo "Email: $SEAFILE_ADMIN_EMAIL"
+echo "Пароль: $SEAFILE_ADMIN_PASSWORD"
+echo "======================================"
